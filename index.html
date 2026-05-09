@@ -1,0 +1,456 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МАКС ПОИСК - Суверенная Национальная Система</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+        
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-animate {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+
+        /* Анимация загрузки */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #2d82f7;
+            width: 40px;
+            height: 40px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Стили для сгенерированного текста */
+        .markdown-content p { margin-bottom: 0.75rem; }
+        .markdown-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .markdown-content a { color: #1a0dab; text-decoration: none; }
+        .markdown-content a:hover { text-decoration: underline; }
+        .markdown-content strong { font-weight: 600; color: #202124; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-gray-800">
+
+    <!-- ВЬЮ 1: ГЛАВНАЯ СТРАНИЦА -->
+    <div id="home-view" class="flex flex-col min-h-screen">
+        <!-- Верхняя панель (Header) -->
+        <header class="flex justify-between items-center p-4 md:px-8 text-sm text-gray-700">
+            <div class="flex items-center gap-4">
+                <a href="#" class="hover:underline hover:text-blue-600 transition-colors hidden sm:block">Госуслуги</a>
+                <a href="#" class="hover:underline hover:text-blue-600 transition-colors hidden sm:block">Почта.рф</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="#" class="hover:underline hover:text-blue-600 transition-colors">Импортозамещение</a>
+                <a href="#" class="hover:underline hover:text-blue-600 transition-colors">Картинки</a>
+                <button class="bg-blue-600 text-white px-5 py-2 rounded-md font-medium hover:bg-blue-700 shadow-sm transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    Войти
+                </button>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="flex-grow flex flex-col items-center justify-center px-4 w-full max-w-3xl mx-auto -mt-16">
+            <!-- Логотип -->
+            <div class="flex items-center text-[3.5rem] sm:text-[4.5rem] md:text-[6rem] font-medium text-black mb-8 select-none">
+                <span class="tracking-tight">МАКС</span>
+                <span class="w-4 sm:w-6 md:w-8"></span>
+                <span class="tracking-tight">П</span>
+                <svg viewBox="0 0 100 100" class="w-[0.75em] h-[0.75em] mx-[0.02em] -mt-[0.05em] drop-shadow-sm">
+                    <defs>
+                        <linearGradient id="o-grad-main" x1="10%" y1="90%" x2="90%" y2="10%">
+                            <stop offset="0%" stop-color="#2d82f7" />
+                            <stop offset="100%" stop-color="#9d42f5" />
+                        </linearGradient>
+                        <mask id="hole-main">
+                            <rect width="100" height="100" fill="white" />
+                            <circle cx="50" cy="50" r="23" fill="black" />
+                        </mask>
+                    </defs>
+                    <g mask="url(#hole-main)">
+                        <path d="M50,5 C25.1,5 5,25.1 5,50 C5,59.3 7.8,67.9 12.6,74.9 L6.5,91.5 C5.8,93.4 7.6,95.1 9.5,94.5 L26.8,89.1 C33.8,92.8 41.6,95 50,95 C74.9,95 95,74.9 95,50 C95,25.1 74.9,5 50,5 Z" fill="url(#o-grad-main)" />
+                    </g>
+                </svg>
+                <span class="tracking-tight">ИСК</span>
+            </div>
+
+            <!-- Поисковая строка -->
+            <div class="w-full relative group mb-8">
+                <input 
+                    type="text" 
+                    id="main-search-input"
+                    placeholder="Что будем искать, товарищ?..." 
+                    class="w-full h-14 pl-6 pr-14 rounded-full border border-gray-200 shadow-[0_2px_15px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] focus:outline-none focus:border-blue-300 focus:shadow-[0_4px_20px_rgba(45,130,247,0.15)] text-lg transition-all"
+                    onkeypress="handleEnter(event, 'main')"
+                >
+                <button 
+                    onclick="triggerSearch('main')"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-gray-100 transition-colors"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="flex flex-wrap justify-center gap-3">
+                <button onclick="triggerSearch('main')" class="px-6 py-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-100 hover:border-gray-300 rounded text-sm text-gray-700 transition-colors shadow-sm">
+                    Государственный поиск
+                </button>
+                <button onclick="triggerSearch('main', true)" class="px-6 py-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-100 hover:border-gray-300 rounded text-sm text-gray-700 transition-colors shadow-sm">
+                    Мне повезёт (Одобрено РКН)
+                </button>
+            </div>
+            
+            <p class="mt-8 text-xs text-gray-400 text-center flex items-center gap-2">
+                <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                Подключение защищено отечественными сертификатами
+            </p>
+        </main>
+
+        <!-- Подвал -->
+        <footer class="bg-[#f2f2f2] text-[#70757a] text-sm mt-auto">
+            <div class="px-8 py-3 border-b border-[#dadce0]">
+                Российская Федерация
+            </div>
+            <div class="px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex flex-wrap justify-center gap-6">
+                    <a href="#" class="hover:underline">Реестр сайтов</a>
+                    <a href="#" class="hover:underline">Отечественные разработчики</a>
+                </div>
+                <div class="flex flex-wrap justify-center gap-6">
+                    <a href="#" class="hover:underline">Конфиденциальность </a>
+                    <a href="#" class="hover:underline">Настройки талонов</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ВЬЮ 2: РЕЗУЛЬТАТЫ ПОИСКА (скрыто по умолчанию) -->
+    <div id="results-view" class="hidden flex-col min-h-screen bg-white">
+        <!-- Верхняя панель с поиском -->
+        <header class="flex items-center p-4 md:px-8 border-b border-gray-200 gap-4 md:gap-8 sticky top-0 bg-white z-10">
+            <!-- Мини-логотип -->
+            <div class="flex items-center text-2xl font-medium text-black cursor-pointer select-none" onclick="goHome()">
+                <span class="tracking-tight hidden sm:inline">МАКС</span>
+                <span class="w-2 hidden sm:inline"></span>
+                <span class="tracking-tight">П</span>
+                <svg viewBox="0 0 100 100" class="w-[0.75em] h-[0.75em] mx-[0.02em] -mt-[0.05em]">
+                    <defs>
+                        <linearGradient id="o-grad-small" x1="10%" y1="90%" x2="90%" y2="10%">
+                            <stop offset="0%" stop-color="#2d82f7" />
+                            <stop offset="100%" stop-color="#9d42f5" />
+                        </linearGradient>
+                        <mask id="hole-small">
+                            <rect width="100" height="100" fill="white" />
+                            <circle cx="50" cy="50" r="23" fill="black" />
+                        </mask>
+                    </defs>
+                    <g mask="url(#hole-small)">
+                        <path d="M50,5 C25.1,5 5,25.1 5,50 C5,59.3 7.8,67.9 12.6,74.9 L6.5,91.5 C5.8,93.4 7.6,95.1 9.5,94.5 L26.8,89.1 C33.8,92.8 41.6,95 50,95 C74.9,95 95,74.9 95,50 C95,25.1 74.9,5 50,5 Z" fill="url(#o-grad-small)" />
+                    </g>
+                </svg>
+                <span class="tracking-tight">ИСК</span>
+            </div>
+
+            <!-- Строка поиска в шапке -->
+            <div class="flex-grow max-w-2xl relative">
+                <input 
+                    type="text" 
+                    id="top-search-input"
+                    class="w-full h-11 pl-5 pr-12 rounded-full border border-gray-200 shadow-sm hover:shadow-md focus:outline-none focus:border-blue-300 focus:shadow-md transition-all bg-white"
+                    onkeypress="handleEnter(event, 'top')"
+                >
+                <button 
+                    onclick="triggerSearch('top')"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full text-blue-600 hover:bg-gray-100 transition-colors"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
+            </div>
+            
+            <div class="hidden md:flex ml-auto items-center gap-4">
+                 <button class="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">Войти</button>
+            </div>
+        </header>
+
+        <!-- Контейнер с результатами -->
+        <main class="flex-grow w-full max-w-4xl px-4 md:px-24 py-6 md:py-8">
+            
+            <!-- Индикатор загрузки -->
+            <div id="loading-spinner" class="hidden flex-col items-center justify-center py-20 fade-in">
+                <div class="loader mb-6"></div>
+                <h3 class="text-lg font-medium text-gray-800 mb-2">Обработка запроса...</h3>
+                <p id="loading-text" class="text-gray-500 text-sm">Отправка данных в Госуслуги...</p>
+            </div>
+
+            <!-- Результаты (Отображаются после загрузки) -->
+            <div id="search-content" class="hidden fade-in">
+                
+                <!-- Блок ИИ ответа -->
+                <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 mb-8 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500"></div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Ответ ГосИИ (Проверено)</h2>
+                    </div>
+                    <div id="ai-response" class="text-gray-800 text-[15px] leading-relaxed markdown-content">
+                        <!-- Текст ИИ будет тут -->
+                    </div>
+                </div>
+
+                <!-- Список ссылок из интернета -->
+                <div>
+                    <h2 class="text-sm font-medium text-gray-500 mb-4 pb-2 border-b border-gray-100">Одобренные источники из сети Интернет</h2>
+                    <div id="web-results" class="space-y-6">
+                        <!-- Ссылки будут тут -->
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно ошибки -->
+    <div id="error-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 px-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform modal-animate">
+            <div class="bg-red-500 px-6 py-4 flex items-center gap-3">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h3 class="text-lg font-bold text-white">Ошибка связи</h3>
+            </div>
+            <div class="p-6">
+                <p id="error-message" class="text-gray-700 leading-relaxed mb-6">
+                    Произошла ошибка при получении талона на поиск. Возможно, нарушена связь с дата-центром.
+                </p>
+                <button onclick="closeErrorModal()" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 rounded-lg transition-colors focus:outline-none">
+                    Попробовать снова
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Настройки API GigaChat ---
+        // Авторизационные данные (Client ID:Client Secret в Base64) предоставленные пользователем
+        const GIGACHAT_AUTH = "MDE5ZTBiYzQtNThiNi03MzYyLTg5YTctZDNkM2NlMzllZjI1OjRiNmYzZDNhLWFkOTYtNDkwZS05M2ExLTgwMmM3MzFhN2VhOA=="; 
+        const GIGACHAT_OAUTH_URL = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth";
+        const GIGACHAT_API_URL = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions";
+
+        // --- DOM Элементы ---
+        const viewHome = document.getElementById('home-view');
+        const viewResults = document.getElementById('results-view');
+        
+        const mainInput = document.getElementById('main-search-input');
+        const topInput = document.getElementById('top-search-input');
+        
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const searchContent = document.getElementById('search-content');
+        const aiResponseContainer = document.getElementById('ai-response');
+        const webResultsContainer = document.getElementById('web-results');
+        const loadingText = document.getElementById('loading-text');
+        
+        const errorModal = document.getElementById('error-modal');
+        const errorMessage = document.getElementById('error-message');
+
+        // Шуточные фразы загрузки
+        const loadingPhrases = [
+            "Инициализация защищенного шлюза...",
+            "Сверка запроса с реестром разрешенных слов...",
+            "Получение талона на интернет-поиск...",
+            "Запрос к базе данных ГосИИ...",
+            "Удаление западной пропаганды из результатов...",
+            "Формирование идеологически верного ответа..."
+        ];
+
+        // --- Логика UI ---
+        function handleEnter(event, source) {
+            if (event.key === 'Enter') {
+                triggerSearch(source);
+            }
+        }
+
+        function goHome() {
+            viewResults.classList.add('hidden');
+            viewResults.classList.remove('flex');
+            viewHome.classList.remove('hidden');
+            viewHome.classList.add('flex');
+            mainInput.value = '';
+            mainInput.focus();
+        }
+
+        function triggerSearch(source, isLucky = false) {
+            const inputEl = source === 'main' ? mainInput : topInput;
+            let query = inputEl.value.trim();
+
+            if (!query) {
+                inputEl.focus();
+                inputEl.classList.add('translate-x-1', 'border-red-300');
+                setTimeout(() => inputEl.classList.remove('translate-x-1', 'border-red-300'), 100);
+                setTimeout(() => inputEl.classList.add('-translate-x-1'), 100);
+                setTimeout(() => inputEl.classList.remove('-translate-x-1'), 200);
+                return;
+            }
+
+            if (isLucky) {
+                query += " (Официальный государственный сайт)";
+            }
+
+            // Синхронизируем инпуты
+            topInput.value = query;
+
+            // Переключаем экраны
+            viewHome.classList.add('hidden');
+            viewHome.classList.remove('flex');
+            viewResults.classList.remove('hidden');
+            viewResults.classList.add('flex');
+            
+            // Запускаем поиск
+            executeRealSearch(query);
+        }
+
+        // --- Получение токена GigaChat ---
+        async function getGigaChatToken() {
+            // Примечание: запросы из браузера могут блокироваться CORS или требовать установки сертификатов Минцифры
+            const response = await fetch(GIGACHAT_OAUTH_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json',
+                    'RqUID': crypto.randomUUID(),
+                    'Authorization': `Basic ${GIGACHAT_AUTH}`
+                },
+                body: 'scope=GIGACHAT_API_PERS'
+            });
+            
+            if (!response.ok) throw new Error(`HTTP Error Token: ${response.status}`);
+            const data = await response.json();
+            return data.access_token;
+        }
+
+        // --- Выполнение поиска ---
+        async function executeRealSearch(query) {
+            // Показываем загрузку
+            searchContent.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+            loadingSpinner.classList.add('flex');
+            
+            // Анимация текста загрузки
+            let phraseIndex = 0;
+            loadingText.innerText = loadingPhrases[0];
+            const phraseInterval = setInterval(() => {
+                phraseIndex = (phraseIndex + 1) % loadingPhrases.length;
+                loadingText.innerText = loadingPhrases[phraseIndex];
+            }, 1500);
+
+            try {
+                // 1. Получаем токен авторизации
+                const token = await getGigaChatToken();
+
+                // 2. Отправляем запрос к модели
+                const payload = {
+                    model: "GigaChat",
+                    messages: [
+                        { 
+                            role: "user",
+                            content: `Пользователь ищет: "${query}". Напиши очень краткую, полезную выжимку-ответ (1-3 абзаца) на русском языке. Не используй форматирование Markdown, кроме жирного текста и переносов строк.` 
+                        }
+                    ],
+                    temperature: 0.7
+                };
+
+                const response = await fetch(GIGACHAT_API_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`HTTP Error API: ${response.status}`);
+                const data = await response.json();
+
+                clearInterval(phraseInterval);
+                renderResults(data);
+
+            } catch (error) {
+                clearInterval(phraseInterval);
+                showError("Не удалось связаться с сервером ГосИИ (GigaChat). Проверьте сертификаты Минцифры или политики CORS вашего браузера. Возможно, истёк талон.");
+                console.error(error);
+            }
+        }
+
+        // --- Отрисовка результатов ---
+        function renderResults(data) {
+            // 1. Извлекаем текст из ответа GigaChat
+            let aiText = data?.choices?.[0]?.message?.content || "К сожалению, по данному запросу информации в разрешенном сегменте не найдено.";
+            
+            // Простая конвертация переносов строк в HTML
+            aiText = aiText.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+            // Простая конвертация жирного текста
+            aiText = aiText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            aiResponseContainer.innerHTML = `<p>${aiText}</p>`;
+
+            // 2. Источники (GigaChat по умолчанию не возвращает их в формате Google Search)
+            // Мы выводим стандартную заглушку из оригинального кода
+            webResultsContainer.innerHTML = `
+                <div class="text-gray-500 italic py-4">
+                    Прямые ссылки отсутствуют. Система посчитала, что выданной справки будет достаточно.
+                </div>
+            `;
+
+            // Переключаем видимость (скрываем загрузку, показываем результаты)
+            loadingSpinner.classList.add('hidden');
+            loadingSpinner.classList.remove('flex');
+            searchContent.classList.remove('hidden');
+        }
+
+        // --- Модалка ошибки ---
+        function showError(msg) {
+            errorMessage.innerText = msg;
+            errorModal.classList.remove('hidden');
+            errorModal.classList.add('flex');
+            loadingSpinner.classList.add('hidden');
+            loadingSpinner.classList.remove('flex');
+        }
+
+        function closeErrorModal() {
+            errorModal.classList.add('hidden');
+            errorModal.classList.remove('flex');
+            goHome(); // Возвращаем на главную при ошибке
+        }
+
+        // Фокус при старте
+        window.onload = () => {
+            mainInput.focus();
+        };
+    </script>
+</body>
+</html>
